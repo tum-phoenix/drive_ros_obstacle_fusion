@@ -1,0 +1,25 @@
+<launch>
+
+    <!-- vehicle name -->
+    <arg name="vehicle" default="ftm_rc_car_1" />
+
+    <!-- topic names -->
+    <arg name="prediction_topic" default="" />
+    <arg name="correction_topic" default="" />
+
+    <!-- base and output frame -->
+    <arg name="base_frame" default=""/>
+
+    <!-- output settings -->
+    <arg name="output" default="screen" />
+
+    <node name="obstacle_fusion" pkg="drive_ros_obstacle_fusion"
+          type="drive_ros_obstacle_fusion_node" output="$(arg output)" launch-prefix="$(arg nice)">
+        <remap from="~/prediction" to="$(arg prediction_topic)"/>
+        <remap from="~/correction" to="$(arg correction_topic)"/>
+        <param name="base_frame" type="str" value="$(arg base_frame)"/>
+        <rosparam command="load" file="$(find drive_ros_obstacle_fusion)/config/$(arg ftm_rc_car_1).yaml"/>
+    </node>
+
+
+</launch>

@@ -1,0 +1,9 @@
+kalman_cov:
+  filter_init_var_x: 0.01
+  filter_init_var_y: 0.01
+  sys_var_x: 0.01
+  sys_var_y: 0.01
+  meas_var_x: 0.01
+  meas_var_y: 0.01
+
+dist_threshold: 0.3
