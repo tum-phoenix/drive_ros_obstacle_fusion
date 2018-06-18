@@ -1,9 +1,13 @@
+# kalman covariances
 kalman_cov:
-  filter_init_var_x: 0.01
-  filter_init_var_y: 0.01
+  filter_init_var_x: 0.5
+  filter_init_var_y: 0.5
   sys_var_x: 0.01
   sys_var_y: 0.01
-  meas_var_x: 0.01
-  meas_var_y: 0.01
 
-dist_threshold: 0.3
+# allowed distance between objects (they get merged if lower)
+dist_threshold: 0.8
+
+# remove this amount of trust in each prediction step
+# value should depend on input message frequency and trust
+remove_trust: 0.08

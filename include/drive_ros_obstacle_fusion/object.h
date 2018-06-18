@@ -1,7 +1,9 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
+#include <cmath>
 #include <ros/ros.h>
+#include "geometry_msgs/Point.h"
 #include "kalman/ExtendedKalmanFilter.hpp"
 #include "object_system_model.h"
 #include "object_measurement_model.h"
@@ -11,6 +13,7 @@ class Object
 {
 public:
 
+    // kalman typedefs
     typedef float T;
 
     typedef Model::State<T> State;
@@ -21,27 +24,35 @@ public:
     typedef Model::SystemModel<T> SystemModel;
     typedef Kalman::ExtendedKalmanFilter<State> Filter;
 
-    Object(){};
-
+    // store some values
     ros::Time last_pred;
     ros::Time last_corr;
+    geometry_msgs::Point last_centroid;
+
+    // constructor
+    Object(){};
 
     // initializes a new object
     bool init(const Kalman::Covariance<State>& stateCov,
-              const Kalman::Covariance<State>& procCov)
+              const Kalman::Covariance<State>& procCov,
+              const float initial_x, const float initial_y,
+              const float initial_trust)
     {
         bool ret = true;
 
         // init kalman
         State s;
         s.setZero();
+        s.x() = initial_x;
+        s.y() = initial_y;
         filter.init(s);
 
-        meas_old.setZero();
-        state_old.setZero();
+        trust = initial_trust;
 
-        ros::Time last_pred(0);
-        ros::Time last_corr(0);
+        last_pred = ros::Time(0);
+        last_corr = ros::Time(0);
+        last_centroid.x = 0;
+        last_centroid.y = 0;
 
         // Set initial state covariance
         ret &= filter.setCovariance(stateCov);
@@ -50,6 +61,26 @@ public:
         ret &= sys.setCovariance(procCov);
 
         return ret;
+    }
+
+    // add some trust
+    void addTrust(const float t)
+    {
+        trust += t;
+        limitTrust();
+    }
+
+    // remove Trust
+    void substractTrust(const float t)
+    {
+        trust -= t;
+        limitTrust();
+    }
+
+    // get the current trust
+    float getTrust(void)
+    {
+        return trust;
     }
 
     // predict state of object
@@ -65,7 +96,7 @@ public:
 
         // check if there is something wrong
         if(filter.getCovariance().hasNaN() ||
-           filter.getState().hasNaN()       )
+           filter.getState().hasNaN())
         {
           ROS_ERROR_STREAM("State covariances or vector is broken!" <<
                            "\nCovariances:\n" << filter.getCovariance() <<
@@ -79,33 +110,24 @@ public:
 
     // correct state of object
     bool correct(const float dt, const float x, const float y,
-                 const float xx_var, const float yy_var)
+                 const Kalman::Covariance<Measurement>& measCov)
     {
         // set measurement covariances
-        Kalman::Covariance<Measurement> cov;
-        cov.setZero();
-        cov(Measurement::X, Measurement::X) = xx_var;
-        cov(Measurement::Y, Measurement::Y) = yy_var;
-        mm.setCovariance(cov);
+        mm.setCovariance(measCov);
 
         // set measurement vector
-        z.x() = x - meas_old.x() + state_old.x();
-        z.y() = y - meas_old.y() + state_old.y();
+        z.x() = x;
+        z.y() = y;
 
         // do the actual correction
         filter.update(mm, z);
 
         // check if there is something wrong
-        if(cov.hasNaN())
+        if(measCov.hasNaN())
         {
           ROS_ERROR("Measurement covariances are broken! Abort.");
           return false;
         }
-
-        // save old values (to use differential measurements)
-        state_old = filter.getState();
-        meas_old.x() = x;
-        meas_old.y() = y;
 
         return true;
     }
@@ -118,18 +140,25 @@ public:
 
 private:
 
-    // ros node handle
+    void limitTrust(void)
+    {
+        trust = std::min(1.0f, trust);
+        trust = std::max(0.0f, trust);
+    }
+
+    // ros node handle (only for output)
     ros::NodeHandle nh;
     ros::NodeHandle pnh;
 
+    // kalman filter stuff
     Control u;
     Measurement z;
     SystemModel sys;
     MeasurementModel mm;
     Filter filter;
 
-    Measurement meas_old;
-    State state_old;
+    // current trust value
+    float trust;
 
 };
 

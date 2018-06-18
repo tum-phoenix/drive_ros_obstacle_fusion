@@ -6,6 +6,7 @@
     <!-- topic names -->
     <arg name="prediction_topic" default="" />
     <arg name="correction_topic" default="" />
+    <arg name="fused_topic"      default="" />
 
     <!-- base and output frame -->
     <arg name="base_frame" default=""/>
@@ -14,11 +15,12 @@
     <arg name="output" default="screen" />
 
     <node name="obstacle_fusion" pkg="drive_ros_obstacle_fusion"
-          type="drive_ros_obstacle_fusion_node" output="$(arg output)" launch-prefix="$(arg nice)">
+          type="drive_ros_obstacle_fusion_node" output="$(arg output)">
         <remap from="~/prediction" to="$(arg prediction_topic)"/>
         <remap from="~/correction" to="$(arg correction_topic)"/>
+        <remap from="~/fused_obstacles" to="$(arg fused_topic)"/>
         <param name="base_frame" type="str" value="$(arg base_frame)"/>
-        <rosparam command="load" file="$(find drive_ros_obstacle_fusion)/config/$(arg ftm_rc_car_1).yaml"/>
+        <rosparam command="load" file="$(find drive_ros_obstacle_fusion)/config/$(arg vehicle).yaml"/>
     </node>
 
 
