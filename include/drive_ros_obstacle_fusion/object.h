@@ -94,9 +94,8 @@ public:
     bool predict(const float dt, const float vx, const float vy)
     {
         // set control vector
+        Control u;
         u.dt() = dt;
-        u.vx() = vx;
-        u.vy() = vy;
         u.vx() = vx_avg->addAndGetCrrtAvg(vx);
         u.vy() = vy_avg->addAndGetCrrtAvg(vy);
 
@@ -125,6 +124,7 @@ public:
         mm.setCovariance(measCov);
 
         // set measurement vector
+        Measurement z;
         z.x() = x;
         z.y() = y;
 
@@ -160,8 +160,6 @@ private:
     ros::NodeHandle pnh;
 
     // kalman filter stuff
-    Control u;
-    Measurement z;
     SystemModel sys;
     MeasurementModel mm;
     Filter filter;
