@@ -90,7 +90,8 @@ void predictionCallback(const drive_ros_msgs::ObstacleArrayConstPtr& msg)
 
         // merge object
         ROS_DEBUG("Prediction! x=%f y=%f trust=%f", obs_trans.centroid_pose.pose.position.x,
-                                                    obs_trans.centroid_pose.pose.position.y, obs_trans.trust);
+                                                    obs_trans.centroid_pose.pose.position.y,
+                                                    obs_trans.trust);
         auto merged_ob = mergeObject(obs_trans);
         if(NULL == merged_ob) continue;
 
@@ -122,7 +123,7 @@ void predictionCallback(const drive_ros_msgs::ObstacleArrayConstPtr& msg)
         merged_ob->last_centroid = obs_trans.centroid_pose.pose.position;
     }
 
-    // output objects
+    // output object
     drive_ros_msgs::ObstacleArray ob_array;
     for(auto ob = obj_list.begin(); ob != obj_list.end(); /* iteration in loop */ )
     {
@@ -158,7 +159,12 @@ void predictionCallback(const drive_ros_msgs::ObstacleArrayConstPtr& msg)
             ob++;
         }
     }
-    obj_pub.publish(ob_array);
+
+    // only publish if we have at least one obstacle to publish
+    if(!ob_array.obstacles.empty())
+    {
+        obj_pub.publish(ob_array);
+    }
 }
 
 // callback function for incoming correction messages
