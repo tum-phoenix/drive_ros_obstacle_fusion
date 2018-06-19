@@ -7,6 +7,7 @@
 #include "kalman/ExtendedKalmanFilter.hpp"
 #include "object_system_model.h"
 #include "object_measurement_model.h"
+#include "moving_average.h"
 
 
 class Object
@@ -36,7 +37,7 @@ public:
     bool init(const Kalman::Covariance<State>& stateCov,
               const Kalman::Covariance<State>& procCov,
               const float initial_x, const float initial_y,
-              const float initial_trust)
+              const float initial_trust, const int mov_avg_size)
     {
         bool ret = true;
 
@@ -47,12 +48,18 @@ public:
         s.y() = initial_y;
         filter.init(s);
 
+        // init trust
         trust = initial_trust;
 
+        // init last values
         last_pred = ros::Time(0);
         last_corr = ros::Time(0);
         last_centroid.x = 0;
         last_centroid.y = 0;
+
+        // init moving average
+        vx_avg = new MovingAverage(mov_avg_size);
+        vy_avg = new MovingAverage(mov_avg_size);
 
         // Set initial state covariance
         ret &= filter.setCovariance(stateCov);
@@ -90,6 +97,8 @@ public:
         u.dt() = dt;
         u.vx() = vx;
         u.vy() = vy;
+        u.vx() = vx_avg->addAndGetCrrtAvg(vx);
+        u.vy() = vy_avg->addAndGetCrrtAvg(vy);
 
         // predict
         filter.predict(sys, u);
@@ -159,6 +168,10 @@ private:
 
     // current trust value
     float trust;
+
+    // moving average
+    MovingAverage* vx_avg;
+    MovingAverage* vy_avg;
 
 };
 

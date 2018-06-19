@@ -12,6 +12,7 @@
 std::string base_frame;
 float dist_threshold;
 float remove_trust; // in each cycle
+int mov_avg_size;
 
 // tf buffer
 tf2_ros::Buffer* tf2_buffer;
@@ -57,7 +58,8 @@ std::shared_ptr<Object> mergeObject(const drive_ros_msgs::Obstacle& o_msg)
         if(!o.init(stateCov, procCov,
                    o_msg.centroid_pose.pose.position.x,
                    o_msg.centroid_pose.pose.position.y,
-                   o_msg.trust))
+                   o_msg.trust,
+                   mov_avg_size))
         {
             ROS_ERROR_STREAM("Could not initilize object!");
             return NULL;
@@ -234,6 +236,7 @@ int main(int argc, char **argv)
     ret &= pnh.getParam("base_frame", base_frame);
     ret &= pnh.getParam("dist_threshold", dist_threshold);
     ret &= pnh.getParam("remove_trust", remove_trust);
+    ret &= pnh.getParam("mov_avg_size", mov_avg_size);
 
     stateCov.setZero();
     procCov.setZero();

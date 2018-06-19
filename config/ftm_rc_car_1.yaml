@@ -11,3 +11,6 @@ dist_threshold: 0.8
 # remove this amount of trust in each prediction step
 # value should depend on input message frequency and trust
 remove_trust: 0.08
+
+# moving average filter length for velocities (prediction)
+mov_avg_size: 20
