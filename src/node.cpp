@@ -6,7 +6,7 @@
 #include "drive_ros_obstacle_fusion/object.h"
 #include "drive_ros_obstacle_fusion/cov_elements.h"
 #include "drive_ros_msgs/ObstacleArray.h"
-#include "drive_ros_msgs/tf2_drive_ros_msgs.h"
+#include "drive_ros_msgs/tf2_Obstacle.h"
 
 // parameter
 std::string base_frame;
