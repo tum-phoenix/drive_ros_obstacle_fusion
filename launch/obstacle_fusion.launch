@@ -1,12 +1,12 @@
 <launch>
 
     <!-- vehicle name -->
-    <arg name="vehicle" default="ftm_rc_car_1" />
+    <arg name="vehicle" default="cc2019_car" />
 
     <!-- topic names -->
     <arg name="prediction_topic" default="" />
     <arg name="correction_topic" default="" />
-    <arg name="fused_topic"      default="" />
+    <arg name="fused_topic"      default="/fused_obstacles" />
 
     <!-- base and output frame -->
     <arg name="base_frame" default=""/>
